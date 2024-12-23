@@ -1,0 +1,21 @@
+from django.http import JsonResponse
+import subprocess
+
+def healthcheck(request):
+    status = {
+        'nginx': 'running',
+        'django': 'running',
+        'postgresql': 'running',
+    }
+
+    try:
+        subprocess.run(['systemctl', 'is-active', '--quiet', 'nginx'], check=True)
+    except subprocess.CalledProcessError:
+        status['nginx'] = 'stopped'
+
+    try:
+        subprocess.run(['systemctl', 'is-active', '--quiet', 'postgresql'], check=True)
+    except subprocess.CalledProcessError:
+        status['postgresql'] = 'stopped'
+
+    return JsonResponse(status)

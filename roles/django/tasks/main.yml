@@ -1,0 +1,39 @@
+- name: Install Django and dependencies
+  pip:
+    name:
+      - django
+      - djangorestframework
+      - psycopg2-binary
+
+- name: Create Django project
+  command: django-admin startproject myapp
+  args:
+    chdir: /opt
+    creates: /opt/myapp
+
+- name: Configure settings.py
+  template:
+    src: settings.py.j2
+    dest: /opt/myapp/myapp/settings.py
+
+- name: Migrate database
+  command: python3 manage.py migrate
+  args:
+    chdir: /opt/myapp
+
+- name: Create healthcheck view
+  template:
+    src: healthcheck_view.py.j2
+    dest: /opt/myapp/myapp/views.py
+
+- name: Add import of views.py
+  lineinfile:
+    path: /opt/myapp/myapp/urls.py
+    insertafter: "from django.urls import path"
+    line: "from . import views"
+
+- name: Add healthcheck to urls.py
+  lineinfile:
+    path: /opt/myapp/myapp/urls.py
+    insertafter: "urlpatterns = \\["
+    line: "    path('healthcheck/', views.healthcheck),"

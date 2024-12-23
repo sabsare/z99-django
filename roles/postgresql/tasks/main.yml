@@ -1,0 +1,36 @@
+- name: Install PostgreSQL
+  apt:
+    name: postgresql
+    state: present
+
+- name: Ensure PostgreSQL is running
+  service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Ensure psycopg2-binary
+  pip:
+    name:
+      - psycopg2-binary
+
+- name: Create a database
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: myappdb
+
+- name: Create a database user
+  become_user: postgres
+  postgresql_user:
+    state: present
+    name: myappuser
+    password: myapppassword
+    #priv: "myappdb:ALL" #PRIV IS DEPRECATED
+
+- name: Define priveleges for myappuser on myappdb #community.postgresql.postgresql_privs
+  become_user: postgres
+  postgresql_privs:
+    database: myappdb
+    privs: ALL
+    roles: myappuser
+    type: database

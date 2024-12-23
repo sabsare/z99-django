@@ -1,0 +1,25 @@
+- name: Install nginx
+  apt:
+    name: nginx
+    state: present
+
+- name: Configure nginx
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/myapp
+
+- name: Enable nginx site
+  file:
+    src: /etc/nginx/sites-available/myapp
+    dest: /etc/nginx/sites-enabled/myapp
+    state: link
+
+- name: Remove default nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: Restart nginx
+  service:
+    name: nginx
+    state: restarted
